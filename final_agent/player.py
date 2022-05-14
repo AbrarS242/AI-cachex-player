@@ -1,6 +1,7 @@
 from numpy import zeros
+from random import randint
 
-
+_STEAL_ACT_LEN = 2
 _PLACE_ACT_LEN = 3
 _TOKEN_MAP_OUT = { 0: None, 1: "red", 2: "blue" }
 _TOKEN_MAP_IN = {v: k for k, v in _TOKEN_MAP_OUT.items() }
@@ -20,6 +21,8 @@ class Player:
         as Blue.
         """
         self.n = n
+        self.n_turns = 0
+        self.ub = self.n - 1
         self._data = zeros((n,n), dtype=int)
         print(self._data)
 
@@ -28,9 +31,16 @@ class Player:
         Called at the beginning of your turn. Based on the current state
         of the game, select an action to play.
         """
-        x = int(input("\nSelect x: "))
-        y = int(input("\nSelect y: "))
+        valid_move = False
         
+        # Select a random move
+        while valid_move = False:
+            x = randint(0,self.ub)
+            aX = self.axial_x(x)
+            y = randint(0,self.ub)
+            if (self._data[aX][y] == 0):
+                break
+            
         return ("PLACE", x, y)
     
     def turn(self, player, action):
@@ -49,6 +59,9 @@ class Player:
             x = self.axial_x(action[_ACT_X_POS])  
             y = action[_ACT_Y_POS]
             self._data[x][y] = _TOKEN_MAP_IN[player]
+
+        self.n_turns += 1
+            
         print(self._data)
 
 
@@ -62,5 +75,3 @@ class Player:
         return x
 
         
-        # put your code here
-
