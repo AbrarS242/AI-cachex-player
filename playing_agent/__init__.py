@@ -5,4 +5,4 @@
 # example import below, you can define it in another file and import
 # it into this module with the name 'Player':
 
-from final_agent.player import Player
+from playing_agent.player import Player

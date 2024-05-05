@@ -36,10 +36,10 @@ class Player:
     def __init__(self, player, n):
         """
         Called once at the beginning of a game to initialise this player.
-        Set up an internal representation of the game state.
+        Sets up an internal representation of the game state.
 
-        The parameter player is the string "red" if your player will
-        play as Red, or the string "blue" if your player will play
+        The parameter player is the string "red" if the player will
+        play as Red, or the string "blue" if the player will play
         as Blue.
         """
 
@@ -50,11 +50,10 @@ class Player:
         self.n_turns = 0
         self.ub = self.n - 1
         self._data = zeros((n,n), dtype=int)
-        print(self._data)
 
     def action(self):
         """
-        Called at the beginning of your turn. Based on the current state
+        Called at the beginning of the player's turn. Based on the current state
         of the game, select an action to play.
         """
         valid_move = False
@@ -79,12 +78,12 @@ class Player:
     def turn(self, player, action):
         """
         Called at the end of each player's turn to inform this player of 
-        their chosen action. Update your internal representation of the 
+        their chosen action. Update the internal representation of the
         game state based on this. The parameter action is the chosen 
         action itself. 
         
-        Note: At the end of your player's turn, the action parameter is
-        the same as what your player returned from the action method
+        Note: At the end of the player's turn, the action parameter is
+        the same as what the player returned from the action method
         above. However, the referee has validated it at this point.
         """
         
@@ -102,8 +101,6 @@ class Player:
             self.apply_captures(coord)
 
         self.n_turns += 1
-            
-        print(self._data)
 
 
     def axial_x(self, x):
@@ -111,8 +108,7 @@ class Player:
         Flips the value of the x-coordinate along the middle of the board to
         get an axial x-coordinate.
         """
-        mid = int(self.n / 2)
-        x = (mid - x) + mid
+        x = abs((self.n - 1) - x)
         return x
 
     def set_token(self, coord, token):
@@ -133,7 +129,7 @@ class Player:
         """
         Check coord for diamond captures, and apply these to the board
         if they exist. Returns a list of captured token coordinates.
-        (taken from the 'referee' module).
+        (taken from the 'referee' module written by the COMP30024 teaching staff).
         """
         opp_type = self.get_token(coord)
         mid_type = _SWAP_PLAYER[opp_type]
@@ -153,11 +149,12 @@ class Player:
         # Remove any captured tokens
         for coord in captured:
             self.set_token(coord, 0)
+        print(captured)
 
     def inside_bounds(self, coord):
         """
         True iff coord inside board bounds.
-        (taken from the 'referee' module).
+        (taken from the 'referee' module written by the COMP30024 teaching staff).
         """
         r, q = coord
         return r >= 0 and r < self.n and q >= 0 and q < self.n
