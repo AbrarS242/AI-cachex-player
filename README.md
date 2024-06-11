@@ -62,3 +62,13 @@ The AI bot employs various strategies and algorithms to make informed decisions.
 - Heuristics to evaluate board states and prioritize moves.
 - Techniques to handle the capture mechanism and the swap rule effectively.
 - Designed to compete against bots of increasing difficulty.
+
+## Example Games
+
+**Random Agent VS Playing Agent**:
+
+![Random Agent VS Playing Agent](https://github.com/AbrarS242/AI-cachex-player/blob/main/example_games/random_vs_player.PNG)
+
+**Playing Agent VS Playing Agent**:
+
+![Random Agent VS Playing Agent](https://github.com/AbrarS242/AI-cachex-player/blob/main/example_games/player_vs_player.PNG)
