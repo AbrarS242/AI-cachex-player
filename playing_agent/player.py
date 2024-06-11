@@ -6,15 +6,14 @@ from random import randint
 from queue import Queue, PriorityQueue
 from math import inf
 
-
 # Action types (taken from 'referee' module)
 _ACTION_PLACE = "PLACE"
 _ACTION_STEAL = "STEAL"
 
 # Axis goals gor each player (taken from the 'referee' module)
 _PLAYER_AXIS = {
-    "red": 0, # Red aims to form path in r/0 axis
-    "blue": 1 # Blue aims to form path in q/1 axis
+    "red": 0,  # Red aims to form path in r/0 axis
+    "blue": 1  # Blue aims to form path in q/1 axis
 }
 
 # Players
@@ -25,25 +24,24 @@ BLUE = "blue"
 _ADD = lambda a, b: (a[0] + b[0], a[1] + b[1])
 
 # Neighbour hex steps in clockwise order (taken from the 'referee' module)
-_HEX_STEPS = array([(1,-1), (1, 0), (0,1), (-1,1), (-1, 0), (0, -1)], dtype="i,i")
+_HEX_STEPS = array([(1, -1), (1, 0), (0, 1), (-1, 1), (-1, 0), (0, -1)], dtype="i,i")
 
 # Pre-compute diamon capture patterns (taken from the 'referee' module)
-_CAPTURE_PATTERNS = [[_ADD(n1, n2), n1, n2] 
-    for n1, n2 in 
-        list(zip(_HEX_STEPS, roll(_HEX_STEPS, 1))) + 
-        list(zip(_HEX_STEPS, roll(_HEX_STEPS, 2)))]
+_CAPTURE_PATTERNS = [[_ADD(n1, n2), n1, n2]
+                     for n1, n2 in
+                     list(zip(_HEX_STEPS, roll(_HEX_STEPS, 1))) +
+                     list(zip(_HEX_STEPS, roll(_HEX_STEPS, 2)))]
 
 # Maps between player string and internal token type (taken from the 'referee' module)
-_TOKEN_MAP_OUT = { 0: None, 1: "red", 2: "blue" }
-_TOKEN_MAP_IN = {v: k for k, v in _TOKEN_MAP_OUT.items() }
+_TOKEN_MAP_OUT = {0: None, 1: "red", 2: "blue"}
+_TOKEN_MAP_IN = {v: k for k, v in _TOKEN_MAP_OUT.items()}
 
 # Map between player token types (taken from the 'referee' module)
-_SWAP_PLAYER = { 0: 0, 1: 2, 2: 1 }
+_SWAP_PLAYER = {0: 0, 1: 2, 2: 1}
 
 
 class Player:
 
-    
     def __init__(self, player, n):
         """
         Called once at the beginning of a game to initialise this player.
@@ -57,27 +55,27 @@ class Player:
         self.player = player
         self.original_player = player
         self.stolen = False
-            
-        # Initialise the board 
+
+        # Initialise the board
         self.n = n
         self.n_turns = 1
         self.ub = self.n - 1
-        self._data = zeros((n,n), dtype=int)
+        self._data = zeros((n, n), dtype=int)
         self.all_coords = self.enum_coords(n)
-        self.border_coords = {"red" : [coord for coord in self.all_coords if (coord[0] == 0 or coord[0] == n-1)], 
-                              "blue": [coord for coord in self.all_coords if (coord[1] == 0 or coord[1] == n-1)]}
-        self.occ_coords = [] 
+        self.border_coords = {"red": [coord for coord in self.all_coords if (coord[0] == 0 or coord[0] == n - 1)],
+                              "blue": [coord for coord in self.all_coords if (coord[1] == 0 or coord[1] == n - 1)]}
+        self.occ_coords = []
 
     def action(self):
         """
         Called at the beginning of the turn. Based on the current state
         of the game, select an action to play.
         """
-            
+
         valid_move = False
 
         if self.n_turns == 1:
-            
+
             # Select a corner if possible
             if self.get_token((0, 0)) == 0:
                 return (_ACTION_PLACE, 0, 0)
@@ -90,15 +88,15 @@ class Player:
 
         # Steal if going second
         if self.n_turns == 2:
-            return (_ACTION_STEAL, )
+            return (_ACTION_STEAL,)
 
         # Check if no piece on the board
         piece_found = False
         for i in range(self.n):
             for j in range(self.n):
-                if self.get_token((i,j)) == _TOKEN_MAP_IN[self.player]:
+                if self.get_token((i, j)) == _TOKEN_MAP_IN[self.player]:
                     piece_found = True
-                    
+
         if piece_found == False:
 
             # Select a corner if possible
@@ -113,9 +111,9 @@ class Player:
             else:
                 # Select a random move
                 while valid_move == False:
-                    x = randint(0,self.ub)
+                    x = randint(0, self.ub)
                     aX = self.axial_x(x)
-                    y = randint(0,self.ub)
+                    y = randint(0, self.ub)
                     if self._data[aX][y] == 0:
 
                         # Cannot place token in the center if it is the first turn of the game (and the board size is odd)
@@ -142,9 +140,9 @@ class Player:
             else:
                 # Select a random move
                 while valid_move == False:
-                    x = randint(0,self.ub)
+                    x = randint(0, self.ub)
                     aX = self.axial_x(x)
-                    y = randint(0,self.ub)
+                    y = randint(0, self.ub)
                     if self._data[aX][y] == 0:
 
                         # Cannot place token in the center if it is the first turn of the game (and the board size is odd)
@@ -154,36 +152,44 @@ class Player:
                             valid_move = True
                 self.stolen = False
                 return (_ACTION_PLACE, x, y)
-        
-        x, y = move
-        x = int(x)
-        y = int(y)
 
-        
+        # Select a random move if identified best move is invalid
+        if self.get_token(move) == 0:
+            while valid_move == False:
+                x = randint(0, self.ub)
+                aX = self.axial_x(x)
+                y = randint(0, self.ub)
+                if self._data[aX][y] == 0:
+
+                    # Cannot place token in the center if it is the first turn of the game (and the board size is odd)
+                    if self.n % 2 == 1 and self.n_turns == 1 and aX * 2 == y * 2 == self.n - 1:
+                        valid_move = False
+                    else:
+                        valid_move = True
+
         return (_ACTION_PLACE, x, y)
-    
+
     def turn(self, player, action):
         """
-        Called at the end of each player's turn to inform this player of 
-        their chosen action. Update your internal representation of the 
-        game state based on this. The parameter action is the chosen 
-        action itself. 
-        
+        Called at the end of each player's turn to inform this player of
+        their chosen action. Update your internal representation of the
+        game state based on this. The parameter action is the chosen
+        action itself.
+
         Note: At the end of your player's turn, the action parameter is
         the same as what your player returned from the action method
         above. However, the referee has validated it at this point.
         """
-        
+
         if self.n_turns == 1:
             _, x, y = action
             self.opening_move = (x, y)
 
-        
         if action[0] == _ACTION_PLACE:
-            
+
             # Find the coordinates
             _, x, y = action
-            coord = (x,y)
+            coord = (x, y)
 
             # Place the token on the board
             self.set_token(coord, _TOKEN_MAP_IN[player])
@@ -193,23 +199,21 @@ class Player:
 
             if self.n_turns > (self.n) * 2 - 1:
                 print(self.detect_win(coord, player))
-            self.occ_coords.append((x,y))
+            self.occ_coords.append((x, y))
 
         elif action[0] == _ACTION_STEAL:
             if self.player != player:
                 self.stolen = True
             self.swap()
 
-            
         self.n_turns += 1
-
 
     def axial_x(self, x):
         """
         Flips the value of the x-coordinate along the middle of the board to
         get an axial x-coordinate.
         """
-        x = abs((self.n -1) - x)       
+        x = abs((self.n - 1) - x)
         return x
 
     def set_token(self, coord, token):
@@ -249,7 +253,6 @@ class Player:
         # Remove any captured tokens
         for coord in captured:
             self.set_token(coord, 0)
-
 
     def check_captures(self, coord):
         """
@@ -301,11 +304,11 @@ class Player:
         (taken from the 'referee' module written by the COMP30024 teaching staff).
         """
         return [_ADD(coord, step) for step in _HEX_STEPS \
-            if self.inside_bounds(_ADD(coord, step))]
+                if self.inside_bounds(_ADD(coord, step))]
 
     def connected_coords(self, start_coord):
         """
-        Find connected coordinates from start_coord. This uses the token 
+        Find connected coordinates from start_coord. This uses the token
         value of the start_coord cell to determine which other cells are
         connected - e.g. all will be the same value
         (taken from the 'referee' module written by the COMP30024 teaching staff).
@@ -320,13 +323,12 @@ class Player:
         reachable = set()
         queue = Queue(0)
         queue.put(start_coord)
-        
 
         while not queue.empty():
 
             curr_coord = queue.get()
             reachable.add(curr_coord)
-            
+
             for coord in self._coord_neighbours(curr_coord):
                 if coord not in reachable and self.get_token(coord) == token_type:
                     queue.put(coord)
@@ -338,7 +340,7 @@ class Player:
         endpoints.append(reachable[axis_vals.index(max(axis_vals))])
         endpoints.append(reachable[axis_vals.index(min(axis_vals))])
         endpoints = list(set(endpoints))
-        
+
         return reachable, endpoints
 
     def find_player_tokens(self, token):
@@ -347,13 +349,13 @@ class Player:
             for y in range(self.n):
                 if self._data[x][y] == token:
                     aX = self.axial_x(x)
-                    positions.append((aX,y))
+                    positions.append((aX, y))
         return positions
 
     def find_longest_chain(self):
         all_tokens = self.find_player_tokens(_TOKEN_MAP_IN[self.player])
         searched = []
-        maxChainLen = 0 
+        maxChainLen = 0
         maxChain = []
         maxChainEnds = []
         for coord in all_tokens:
@@ -374,7 +376,7 @@ class Player:
             opp = RED
         all_tokens = self.find_player_tokens(_TOKEN_MAP_IN[opp])
         searched = []
-        maxChainLen = 0 
+        maxChainLen = 0
         maxChain = []
         maxChainEnds = []
         for coord in all_tokens:
@@ -390,8 +392,8 @@ class Player:
 
     def enum_coords(self, n):
         all_coords = []
-        for i in range (0, n):
-            for j in range (0, n):
+        for i in range(0, n):
+            for j in range(0, n):
                 new_coord = (i, j)
                 all_coords.append(new_coord)
         return all_coords
@@ -410,7 +412,6 @@ class Player:
             (r, q) = coord
             return 0 <= r < n and 0 <= q < n and (not coord in occ_coords)
 
-        
         # Run A* and return path (default empty list if no path)
         return self.a_star(start_coord, goal_coord, f_h, self._coord_neighbours) or []
 
