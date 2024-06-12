@@ -59,9 +59,8 @@ The `Player` class in the `playing_agent` module contains three essential method
 
 The AI bot employs various strategies and algorithms to make informed decisions. These include:
 - Minimax algorithm with alpha-beta pruning for efficient decision-making.
-- Heuristics to evaluate board states and prioritize moves.
+- Heuristics to evaluate board states and prioritise moves.
 - Techniques to handle the capture mechanism and the swap rule effectively.
-- Designed to compete against bots of increasing difficulty.
 
 ## Example Games
 
